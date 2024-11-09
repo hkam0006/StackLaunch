@@ -1,18 +1,90 @@
+import { db } from "@/server/db"
 import simpleGit from "simple-git"
+import getAllFilePaths from "@/lib/file"
+import { S3 } from 'aws-sdk';
+import uploadFile from "@/lib/aws";
+import { auth } from "@clerk/nextjs/server";
+
+const s3 = new S3({
+  accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
+  secretAccessKey: process.env.CLOUDFLARE_ACCESS_KEY_SECRET as string,
+  endpoint: process.env.CLOUDFLARE_ENDPOINT as string
+})
 
 export const POST = async (req: Request) => {
   const data = await req.json()
-  const id = "test_id"
+
+  const domainName = data.domainName
+  if (!domainName){
+    return new Response("Domain name not given", {status: 400})
+  }
+
+  // Check if domain already exists
+  const domainAlreadyExists = await db.domain.findFirst({
+    where: {
+      domainName: {
+        equals: domainName
+      }
+    }
+  })
+
+  if (domainAlreadyExists){
+    return new Response("Domain name already exists, Try another one", {status: 400})
+  }
   
+  // Check of repo url is given
   const repoUrl = data.repoUrl
   if (!repoUrl){
     return new Response("Repository URL not found", {status: 400})
   }
+
+  const outputDir = `./output/${domainName}`
+
+  // Clone github repo
   try {
-    await simpleGit().clone(repoUrl, `./output/${"test_id"}`)
+    await simpleGit().clone(repoUrl, outputDir)
   } catch (err) {
     console.error(err)
-    return new Response("Repository clone failed", {status: 400})
+    return new Response("Failed to clone repository", {status: 400})
   }
-  return new Response("Repository successfully deployed", {status: 200})
+
+  const filePaths: string[] = []
+
+  // Get all file paths
+  try {
+    getAllFilePaths(outputDir, filePaths)
+  } catch (err) {
+    return new Response("Error occurred while retrieving file paths", {status: 400})
+  }
+
+  try {
+    filePaths.forEach(async (localFilePath) => {
+      await uploadFile(
+        s3,
+        localFilePath
+      )
+    })
+  } catch (err) {
+    return new Response("Error occurred while uploading files", {status: 400})
+  }
+
+  const {userId} = await auth()
+  await db.domain.create({
+    data: {
+      domainName: domainName,
+      userId: userId as string
+    }
+  })
+
+  const responseData = JSON.stringify({
+    message: "Repository successfully uploaded to object store",
+    domainName: domainName
+  })
+
+  return new Response(responseData, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
 }
