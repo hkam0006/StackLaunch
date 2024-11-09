@@ -1,9 +1,6 @@
-import Link from "next/link";
+'use client'
 
-import { LatestPost } from "@/app/_components/post";
-import { api, HydrateClient } from "@/trpc/server";
-
-export default async function Home() {
+export default function Home() {
   return (
     <h1>Hello world</h1>
   )
