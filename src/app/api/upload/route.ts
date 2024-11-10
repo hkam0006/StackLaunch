@@ -72,7 +72,9 @@ export const POST = async (req: Request) => {
   await db.domain.create({
     data: {
       domainName: domainName,
-      userId: userId as string
+      userId: userId as string,
+      createdAt: new Date(),
+      lastUpdatedAt: new Date()
     }
   })
 

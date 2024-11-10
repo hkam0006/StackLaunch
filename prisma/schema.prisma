@@ -19,8 +19,10 @@ model User {
 }
 
 model Domain {
-  id         String @id @default(cuid())
-  userId     String
-  domainName String @unique
-  User       User   @relation(fields: [userId], references: [id])
+  id            String   @id @default(cuid())
+  userId        String
+  domainName    String   @unique
+  createdAt     DateTime
+  lastUpdatedAt DateTime
+  User          User     @relation(fields: [userId], references: [id])
 }
