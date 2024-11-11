@@ -4,6 +4,8 @@ import getAllFilePaths from "@/lib/file"
 import { S3 } from 'aws-sdk';
 import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
+import sendToRabbitMQ from "@/lib/message_queue";
+
 
 const s3 = new S3({
   accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
@@ -68,13 +70,24 @@ export const POST = async (req: Request) => {
     return new Response("Error occurred while uploading files", {status: 400})
   }
 
+    // Send job to queue
+    try {
+      sendToRabbitMQ(
+        "build_queue",
+        domainName
+      )
+    } catch (err) {
+      return new Response("Error occurred while submitting job to queue", {status: 400})
+    }
+
   const {userId} = await auth()
+  const currentDate = new Date()
   await db.domain.create({
     data: {
       domainName: domainName,
       userId: userId as string,
-      createdAt: new Date(),
-      lastUpdatedAt: new Date()
+      createdAt: currentDate,
+      lastUpdatedAt: currentDate,
     }
   })
 
