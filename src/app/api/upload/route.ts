@@ -1,11 +1,10 @@
 import { db } from "@/server/db"
 import simpleGit from "simple-git"
-import getAllFilePaths from "@/lib/file"
+import {getAllFilePaths, deleteFiles, deleteDirectories} from "@/lib/file"
 import { S3 } from 'aws-sdk';
 import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
 import sendToRabbitMQ from "@/lib/message_queue";
-
 
 const s3 = new S3({
   accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
@@ -66,19 +65,23 @@ export const POST = async (req: Request) => {
         localFilePath
       )
     })
+    deleteFiles(filePaths)
+    deleteDirectories([outputDir])
   } catch (err) {
     return new Response("Error occurred while uploading files", {status: 400})
   }
 
-    // Send job to queue
-    try {
-      sendToRabbitMQ(
-        "build_queue",
-        domainName
-      )
-    } catch (err) {
-      return new Response("Error occurred while submitting job to queue", {status: 400})
-    }
+  
+
+  // Send job to queue
+  try {
+    sendToRabbitMQ(
+      "build_queue",
+      domainName
+    )
+  } catch (err) {
+    return new Response("Error occurred while submitting job to queue", {status: 400})
+  }
 
   const {userId} = await auth()
   const currentDate = new Date()

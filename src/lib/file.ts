@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export default function getAllFilePaths(
+export function getAllFilePaths(
   dirPath: string,
   arrayOfFiles: string[]
 ) {
@@ -16,5 +16,30 @@ export default function getAllFilePaths(
     }
   })
   return arrayOfFiles
+}
+
+export function deleteFiles(
+  filePaths: string[]
+){
+  for(const filePath of filePaths){
+    try {
+      fs.rm(filePath, {recursive: true, force: true}, () => {});
+    } catch (err) {
+      console.error('Error deleting file path')
+    }
+  }
+}
+
+export function deleteDirectories(directories: string[]) {
+  for (const dir of directories) {
+    try {
+      fs.rm(dir, { recursive: true, force: true }, (err) => {
+        if (err) throw err
+      }); 
+      console.log(`Deleted directory: ${dir}`);
+    } catch (error) {
+      console.error(`Error deleting directory ${dir}:`, error);
+    }
+  }
 }
 
