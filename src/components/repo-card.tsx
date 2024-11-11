@@ -1,21 +1,26 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import { EllipsisVerticalIcon, FolderGit } from "lucide-react";
 
 const RepoCardItem = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Repo Name</CardTitle>
-        <CardDescription>www.repoulr.com</CardDescription>
+        <div className="flex justify-between items-center">
+          <CardTitle>Repo Name</CardTitle>
+          <Button variant="outline" size="icon">
+            <EllipsisVerticalIcon />
+          </Button>
+        </div>
+        <CardDescription>
+          <Button className="p-0" variant='link'>
+            www.repourl.com
+          </Button>
+          <br />
+          Last updated: Date
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <p>Card Content</p>
-      </CardContent>
-      <CardFooter className="flex justify-end space-x-3">
-        <Button>Edit</Button>
-        <Button variant="destructive">Delete</Button>
-      </CardFooter>
     </Card>
   );
 };
