@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from "react";
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai";
 import { Button } from "./ui/button";
@@ -54,7 +55,7 @@ const Navbar = () => {
       >
         {/* Mobile Logo */}
         <h1 className="m-4 w-full text-2xl font-bold text-[#00df9a]">
-          STACKLAUNCH
+          STACKLAUNCH_
         </h1>
 
         {/* Mobile Navigation Items */}
