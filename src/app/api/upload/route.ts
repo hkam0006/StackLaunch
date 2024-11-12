@@ -46,7 +46,7 @@ export const POST = async (req: Request) => {
     await simpleGit().clone(repoUrl, outputDir)
   } catch (err) {
     console.error(err)
-    return new Response("Failed to clone repository", {status: 400})
+    return new Response(`Failed to clone repository ${err}`, {status: 400})
   }
 
   const filePaths: string[] = []
@@ -55,7 +55,7 @@ export const POST = async (req: Request) => {
   try {
     getAllFilePaths(outputDir, filePaths)
   } catch (err) {
-    return new Response("Error occurred while retrieving file paths", {status: 400})
+    return new Response(`Error occurred while retrieving file paths, ${err}`, {status: 400})
   }
 
   try {
@@ -68,7 +68,7 @@ export const POST = async (req: Request) => {
     deleteFiles(filePaths)
     deleteDirectories([outputDir])
   } catch (err) {
-    return new Response("Error occurred while uploading files", {status: 400})
+    return new Response(`Error occurred while uploading files, ${err}`, {status: 400})
   }
 
   
@@ -80,7 +80,7 @@ export const POST = async (req: Request) => {
       domainName
     )
   } catch (err) {
-    return new Response("Error occurred while submitting job to queue", {status: 400})
+    return new Response(`Error occurred while submitting job to queue ${err}`, {status: 400})
   }
 
   const {userId} = await auth()
