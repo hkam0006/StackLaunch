@@ -1,6 +1,6 @@
 import { db } from "@/server/db"
 import simpleGit from "simple-git"
-import {getAllFilePaths, deleteFiles, deleteDirectories, downloadAndExtractRepo} from "@/lib/file"
+import {getAllFilePaths, deleteFiles, deleteDirectories, downloadAndExtractRepo, clearDirectory} from "@/lib/file"
 import { S3 } from 'aws-sdk';
 import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
@@ -70,7 +70,7 @@ export const POST = async (req: Request) => {
       )
     })
     deleteFiles(filePaths)
-    deleteDirectories([outputDir])
+    clearDirectory(outputDir)
   } catch (err) {
     return new Response(`Error occurred while uploading files, ${err}`, {status: 400})
   }

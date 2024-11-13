@@ -18,11 +18,12 @@ export async function downloadAndExtractRepo(repoUrl: string) {
 
   // Extract the ZIP file
   fs.createReadStream(zipPath)
-    .pipe(unzipper.Extract({ path: "/tmp/repo"}))
+    .pipe(unzipper.Extract({ path: "/tmp"}))
     .on('close', () => {
       console.log('Repository downloaded and extracted');
+      deleteFiles(["/tmp/repo.zip"])
     });
-  return "/tmp/repo"
+  return "/tmp"
 }
 
 
@@ -68,3 +69,19 @@ export function deleteDirectories(directories: string[]) {
   }
 }
 
+export function clearDirectory(dirPath: string) {
+  const files = fs.readdirSync(dirPath); // Read contents of the directory
+
+  files.forEach((file) => {
+    const filePath = path.join(dirPath, file);
+    const stats = fs.statSync(filePath);
+
+    if (stats.isDirectory()) {
+      // Recursively delete subdirectories
+      fs.rmSync(filePath, { recursive: true, force: true });
+    } else {
+      // Delete files
+      fs.unlinkSync(filePath);
+    }
+  });
+}
