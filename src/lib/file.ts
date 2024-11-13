@@ -1,5 +1,30 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import fetch from 'node-fetch';
+import unzipper from 'unzipper';
+
+export async function downloadAndExtractRepo(repoUrl: string) {
+  const url = `${repoUrl}/archive/refs/heads/main.zip`;
+  const zipPath = '/tmp/repo.zip' // Vercel allows temporary storage in the /tmp directory
+
+  // Download the ZIP file
+  const response = await fetch(url);
+  const fileStream = fs.createWriteStream(zipPath);
+  await new Promise((resolve, reject) => {
+    response.body?.pipe(fileStream);
+    response.body?.on('error', reject);
+    fileStream.on('finish', resolve);
+  });
+
+  // Extract the ZIP file
+  fs.createReadStream(zipPath)
+    .pipe(unzipper.Extract({ path: "/tmp/repo"}))
+    .on('close', () => {
+      console.log('Repository downloaded and extracted');
+    });
+  return "/tmp/repo"
+}
+
 
 export function getAllFilePaths(
   dirPath: string,

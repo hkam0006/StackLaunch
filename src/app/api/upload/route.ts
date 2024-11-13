@@ -1,6 +1,6 @@
 import { db } from "@/server/db"
 import simpleGit from "simple-git"
-import {getAllFilePaths, deleteFiles, deleteDirectories} from "@/lib/file"
+import {getAllFilePaths, deleteFiles, deleteDirectories, downloadAndExtractRepo} from "@/lib/file"
 import { S3 } from 'aws-sdk';
 import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
@@ -39,13 +39,12 @@ export const POST = async (req: Request) => {
   if (!repoUrl){
     return new Response("Repository URL not found", {status: 400})
   }
-
-  const outputDir = path.join(__dirname, domainName)
   
+  let outputDir: string;
 
   // Clone github repo
   try {
-    await simpleGit().clone(repoUrl, outputDir)
+    outputDir = await downloadAndExtractRepo(repoUrl)
   } catch (err) {
     console.error(err)
     return new Response(`Failed to clone repository ${err}`, {status: 400})
@@ -55,6 +54,9 @@ export const POST = async (req: Request) => {
 
   // Get all file paths
   try {
+    if (!outputDir){
+      return new Response(`Failed to clone repository`, {status: 400})
+    }
     getAllFilePaths(outputDir, filePaths)
   } catch (err) {
     return new Response(`Error occurred while retrieving file paths, ${err}`, {status: 400})
