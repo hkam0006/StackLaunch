@@ -6,7 +6,6 @@ import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
 import sendToRabbitMQ from "@/lib/message_queue";
 import path from "path";
-import {Git} from 'git'
 
 const s3 = new S3({
   accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
@@ -46,7 +45,7 @@ export const POST = async (req: Request) => {
 
   // Clone github repo
   try {
-    const response = await fetch(repoUrl)
+    await simpleGit().clone(repoUrl, outputDir)
   } catch (err) {
     console.error(err)
     return new Response(`Failed to clone repository ${err}`, {status: 400})
