@@ -5,6 +5,8 @@ import { S3 } from 'aws-sdk';
 import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
 import sendToRabbitMQ from "@/lib/message_queue";
+import path from "path";
+import {Git} from 'git'
 
 const s3 = new S3({
   accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
@@ -39,11 +41,12 @@ export const POST = async (req: Request) => {
     return new Response("Repository URL not found", {status: 400})
   }
 
-  const outputDir = `./output/${domainName}`
+  const outputDir = path.join(__dirname, domainName)
+  
 
   // Clone github repo
   try {
-    await simpleGit().clone(repoUrl, outputDir)
+    const response = await fetch(repoUrl)
   } catch (err) {
     console.error(err)
     return new Response(`Failed to clone repository ${err}`, {status: 400})
@@ -70,8 +73,6 @@ export const POST = async (req: Request) => {
   } catch (err) {
     return new Response(`Error occurred while uploading files, ${err}`, {status: 400})
   }
-
-  
 
   // Send job to queue
   try {
