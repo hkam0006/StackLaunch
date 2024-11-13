@@ -21,7 +21,6 @@ export async function downloadAndExtractRepo(repoUrl: string) {
     .pipe(unzipper.Extract({ path: "/tmp"}))
     .on('close', () => {
       console.log('Repository downloaded and extracted');
-      deleteFiles(["/tmp/repo.zip"])
     });
   return "/tmp"
 }
