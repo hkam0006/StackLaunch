@@ -5,7 +5,7 @@ import unzipper from 'unzipper';
 
 export async function downloadAndExtractRepo(repoUrl: string) {
   const url = `${repoUrl}/archive/refs/heads/main.zip`;
-  const zipPath = '/tmp/repo.zip' // Vercel allows temporary storage in the /tmp directory
+  const zipPath = path.join("/tmp", "repo.zip") // Vercel allows temporary storage in the /tmp directory
 
   // Download the ZIP file
   const response = await fetch(url);
