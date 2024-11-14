@@ -7,6 +7,10 @@ export async function downloadAndExtractRepo(repoUrl: string) {
   const url = `${repoUrl}/archive/refs/heads/main.zip`;
   const zipPath = path.join("/tmp", "repo.zip") // Vercel allows temporary storage in the /tmp directory
 
+  if (!fs.existsSync('/tmp')) {
+    fs.mkdirSync('/tmp');
+  }
+
   // Download the ZIP file
   const response = await fetch(url);
   const fileStream = fs.createWriteStream(zipPath);
