@@ -10,7 +10,8 @@ import path from "path";
 const s3 = new S3({
   accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
   secretAccessKey: process.env.CLOUDFLARE_ACCESS_KEY_SECRET as string,
-  endpoint: process.env.CLOUDFLARE_ENDPOINT as string
+  endpoint: process.env.CLOUDFLARE_ENDPOINT as string,
+  region: "apac"
 })
 
 export const POST = async (req: Request) => {
