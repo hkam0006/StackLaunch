@@ -1,6 +1,6 @@
 import { db } from "@/server/db"
 import simpleGit from "simple-git"
-import {getAllFilePaths, deleteFiles, deleteDirectories, downloadAndExtractRepo, clearDirectory} from "@/lib/file"
+import {getAllFilePaths, deleteFiles, downloadAndExtractRepoToS3, clearDirectory, } from "@/lib/file"
 import { S3 } from 'aws-sdk';
 import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
@@ -44,36 +44,36 @@ export const POST = async (req: Request) => {
 
   // Clone github repo
   try {
-    outputDir = await downloadAndExtractRepo(repoUrl)
+    await downloadAndExtractRepoToS3(repoUrl, `/output/${domainName}`)
   } catch (err) {
     console.error(err)
     return new Response(`Failed to clone repository ${err}`, {status: 400})
   }
 
-  const filePaths: string[] = []
+  // const filePaths: string[] = []
 
-  // Get all file paths
-  try {
-    if (!outputDir){
-      return new Response(`Failed to clone repository`, {status: 400})
-    }
-    getAllFilePaths(outputDir, filePaths)
-  } catch (err) {
-    return new Response(`Error occurred while retrieving file paths, ${err}`, {status: 400})
-  }
+  // // Get all file paths
+  // try {
+  //   if (!outputDir){
+  //     return new Response(`Failed to clone repository`, {status: 400})
+  //   }
+  //   getAllFilePaths(outputDir, filePaths)
+  // } catch (err) {
+  //   return new Response(`Error occurred while retrieving file paths, ${err}`, {status: 400})
+  // }
 
-  try {
-    filePaths.forEach(async (localFilePath) => {
-      await uploadFile(
-        s3,
-        localFilePath
-      )
-    })
-    deleteFiles(filePaths)
-    clearDirectory(outputDir)
-  } catch (err) {
-    return new Response(`Error occurred while uploading files, ${err}`, {status: 400})
-  }
+  // try {
+  //   filePaths.forEach(async (localFilePath) => {
+  //     await uploadFile(
+  //       s3,
+  //       localFilePath
+  //     )
+  //   })
+  //   deleteFiles(filePaths)
+  //   clearDirectory(outputDir)
+  // } catch (err) {
+  //   return new Response(`Error occurred while uploading files, ${err}`, {status: 400})
+  // }
 
   // Send job to queue
   try {

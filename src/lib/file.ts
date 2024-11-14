@@ -2,28 +2,51 @@ import * as fs from 'fs';
 import * as path from 'path';
 import fetch from 'node-fetch';
 import unzipper from 'unzipper';
+import { S3 } from 'aws-sdk';
 
-export async function downloadAndExtractRepo(repoUrl: string) {
+async function uploadToS3(bucketName: string, key: string, body: Buffer, s3: S3) {
+  const params = {
+    Bucket: bucketName,
+    Key: key,
+    Body: body,
+  };
+  return s3.upload(params).promise();
+}
+
+// Function to download, extract, and upload repository contents to S3
+export async function downloadAndExtractRepoToS3(repoUrl: string, bucketName: string) {
   const url = `${repoUrl}/archive/refs/heads/main.zip`;
-  const zipPath = path.join("/tmp", "repo.zip") // Vercel allows temporary storage in the /tmp directory
-
-  if (!fs.existsSync('/tmp')) {
-    fs.mkdirSync('/tmp');
-  }
 
   // Download the ZIP file
   const response = await fetch(url);
-  const data = await response.arrayBuffer()
-  const bufferData = Buffer.from(data)
-  fs.writeFileSync(zipPath, bufferData)
-  
-  // Extract the ZIP file
-  fs.createReadStream(zipPath)
-    .pipe(unzipper.Extract({ path: "/tmp"}))
-    .on('close', () => {
-      console.log('Repository downloaded and extracted');
-    });
-  return "/tmp"
+  if (!response.body) {
+    throw new Error("Failed to download repository archive.");
+  }
+
+  // Stream the ZIP file and extract files directly to S3
+  const extractStream = response.body.pipe(unzipper.Parse({ forceStream: true }));
+
+  for await (const entry of extractStream) {
+    const fileName = entry.path;
+
+    if (entry.type === 'File') {
+      // Read file content as a buffer and upload it to S3
+      const fileContent = await entry.buffer();
+      const s3Key = `repo-files/${fileName}`; // S3 path for the file
+
+      try {
+        await uploadToS3(bucketName, s3Key, fileContent);
+        console.log(`Uploaded ${fileName} to S3 at ${s3Key}`);
+      } catch (error) {
+        console.error(`Failed to upload ${fileName} to S3:`, error);
+      }
+    } else {
+      // Skip directories
+      entry.autodrain();
+    }
+  }
+
+  console.log('Repository downloaded and uploaded to S3');
 }
 
 
