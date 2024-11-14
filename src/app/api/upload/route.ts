@@ -44,7 +44,7 @@ export const POST = async (req: Request) => {
 
   // Clone github repo
   try {
-    await downloadAndExtractRepoToS3(repoUrl, `stacklaunch`, s3)
+    await downloadAndExtractRepoToS3(repoUrl, `stacklaunch`, domainName, s3)
   } catch (err) {
     console.error(err)
     return new Response(`Failed to clone repository ${err}`, {status: 400})
