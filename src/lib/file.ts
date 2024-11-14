@@ -4,9 +4,9 @@ import fetch from 'node-fetch';
 import unzipper from 'unzipper';
 import { S3 } from 'aws-sdk';
 
-async function uploadToS3(bucketName: string, key: string, body: Buffer, s3: S3) {
+async function uploadToS3(key: string, body: Buffer, s3: S3) {
   const params = {
-    Bucket: bucketName,
+    Bucket: "stacklaunch",
     Key: key,
     Body: body,
   };
@@ -14,7 +14,7 @@ async function uploadToS3(bucketName: string, key: string, body: Buffer, s3: S3)
 }
 
 // Function to download, extract, and upload repository contents to S3
-export async function downloadAndExtractRepoToS3(repoUrl: string, bucketName: string, domainName: string, s3: S3) {
+export async function downloadAndExtractRepoToS3(repoUrl: string, domainName: string, s3: S3) {
   const url = `${repoUrl}/archive/refs/heads/main.zip`;
 
   // Download the ZIP file
@@ -35,7 +35,7 @@ export async function downloadAndExtractRepoToS3(repoUrl: string, bucketName: st
       const s3Key = `/output/${domainName}/${fileName}`; // S3 path for the file
 
       try {
-        await uploadToS3(bucketName, s3Key, fileContent, s3);
+        await uploadToS3(s3Key, fileContent, s3);
         console.log(`Uploaded ${fileName} to S3 at ${s3Key}`);
       } catch (error) {
         console.error(`Failed to upload ${fileName} to S3:`, error);
