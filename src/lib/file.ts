@@ -13,13 +13,10 @@ export async function downloadAndExtractRepo(repoUrl: string) {
 
   // Download the ZIP file
   const response = await fetch(url);
-  const fileStream = fs.createWriteStream(zipPath);
-  await new Promise((resolve, reject) => {
-    response.body?.pipe(fileStream);
-    response.body?.on('error', reject);
-    fileStream.on('finish', resolve);
-  });
-
+  const data = await response.arrayBuffer()
+  const bufferData = Buffer.from(data)
+  fs.writeFileSync(zipPath, bufferData)
+  
   // Extract the ZIP file
   fs.createReadStream(zipPath)
     .pipe(unzipper.Extract({ path: "/tmp"}))
