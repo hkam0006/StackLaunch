@@ -45,7 +45,7 @@ export const POST = async (req: Request) => {
 
   // Clone github repo
   try {
-    downloadAndExtractRepoToS3(repoUrl, domainName, s3)
+    await downloadAndExtractRepoToS3(repoUrl, domainName, s3)
   } catch (err) {
     console.error(err)
     return new Response(`Failed to clone repository ${err}`, {status: 400})
@@ -53,7 +53,7 @@ export const POST = async (req: Request) => {
 
   // Send job to queue
   try {
-    sendToRabbitMQ(
+    await sendToRabbitMQ(
       "build_queue",
       domainName
     )
