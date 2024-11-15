@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { BadgePlus, Grid2X2, List } from "lucide-react";
+import { BadgePlus, Grid2X2, List, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import axios from "axios";
 
@@ -28,23 +28,35 @@ import { Label } from "./ui/label";
 import { RepoDomain } from "@/lib/utils";
 
 function NewRepoDialog() {
-  const [domainName, setDomainName] = useState("")
-  const [repoUrl, setRepoUrl] = useState("")
+  const [domainName, setDomainName] = useState("");
+  const [repoUrl, setRepoUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false)
 
-  function clearForm(){
-    setRepoUrl("")
-    setDomainName("")
+  function clearForm() {
+    if (open){
+      setRepoUrl("");
+      setDomainName("");
+    }
+    setOpen(!open)
   }
 
   const handleUploadRepo = async () => {
-    await axios.post("https://stacklaunch.vercel.app/api/upload", {
-      repoUrl: repoUrl,
-      domainName: domainName,
-    });
+    setLoading(true);
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/upload`, {
+        repoUrl: repoUrl,
+        domainName: domainName,
+      });
+      setOpen(false)
+    } catch(err){
+      console.error(err)
+    }
+    setLoading(false);
   };
 
   return (
-    <Dialog onOpenChange={() => clearForm()}>
+    <Dialog open={open} onOpenChange={() => clearForm()}>
       <DialogTrigger asChild>
         <Button className="h-100">
           <BadgePlus />
@@ -54,9 +66,7 @@ function NewRepoDialog() {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add new repository</DialogTitle>
-          <DialogDescription>
-            Deploy a new repository
-          </DialogDescription>
+          <DialogDescription>Deploy a new repository</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -83,7 +93,16 @@ function NewRepoDialog() {
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit" onClick={() => handleUploadRepo()}>Add</Button>
+          {!loading ? (
+            <Button type="submit" onClick={() => handleUploadRepo()}>
+              Add
+            </Button>
+          ) : (
+            <Button disabled>
+              <Loader2 className="animate-spin" />
+              Uploading repo
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
