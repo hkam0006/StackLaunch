@@ -18,7 +18,8 @@ export async function downloadS3Folder(prefix: string) {
   const s3Client = new S3({
     accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
     secretAccessKey: process.env.CLOUDFLARE_ACCESS_KEY_SECRET as string,
-    endpoint: process.env.DOWNLOAD_ENDPOINT as string
+    endpoint: process.env.DOWNLOAD_ENDPOINT as string,
+    region: "apac"
   })
   try {
     const result = await s3Client
