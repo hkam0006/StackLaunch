@@ -1,11 +1,8 @@
 import { db } from "@/server/db"
-import simpleGit from "simple-git"
-import {getAllFilePaths, deleteFiles, downloadAndExtractRepoToS3, clearDirectory, } from "@/lib/file"
+import {downloadAndExtractRepoToS3 } from "@/lib/file"
 import { S3 } from 'aws-sdk';
-import uploadFile from "@/lib/aws";
 import { auth } from "@clerk/nextjs/server";
 import sendToRabbitMQ from "@/lib/message_queue";
-import path from "path";
 
 const s3 = new S3({
   accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,

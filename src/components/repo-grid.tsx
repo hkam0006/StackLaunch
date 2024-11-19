@@ -26,12 +26,14 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "./ui/label";
 import { RepoDomain } from "@/lib/utils";
+import Error from "next/error";
 
 function NewRepoDialog() {
   const [domainName, setDomainName] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState("")
 
   function clearForm() {
     if (open){
@@ -48,9 +50,18 @@ function NewRepoDialog() {
         repoUrl: repoUrl,
         domainName: domainName,
       });
+      await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/deploy`, {
+        id: domainName
+      })
       setOpen(false)
     } catch(err){
-      console.error(err)
+      if (axios.isAxiosError(err)) {
+        // Handle Axios-specific errors
+        setError(err.response?.data || err.message || "An error occurred");
+      } else {
+        // Handle other unexpected errors
+        setError("Unexpected error");
+      }
     }
     setLoading(false);
   };
@@ -63,7 +74,7 @@ function NewRepoDialog() {
           New
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="w-[500px] max-w-[90vw]">
         <DialogHeader>
           <DialogTitle>Add new repository</DialogTitle>
           <DialogDescription>Deploy a new repository</DialogDescription>
@@ -91,6 +102,7 @@ function NewRepoDialog() {
               className="col-span-3"
             />
           </div>
+          <p className="text-red-600">{error}</p>
         </div>
         <DialogFooter>
           {!loading ? (
@@ -100,7 +112,7 @@ function NewRepoDialog() {
           ) : (
             <Button disabled>
               <Loader2 className="animate-spin" />
-              Uploading repo
+              Uploading and deploying repository
             </Button>
           )}
         </DialogFooter>
