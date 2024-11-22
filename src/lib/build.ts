@@ -9,8 +9,8 @@ export function buildProject(id: string){
       console.log('stdout: ', data)
     })
 
-    child.stderr?.on('data', (data) => {
-      console.log('stderr: ', data)
+    child.stderr?.on('data', (data: Error) => {
+      console.log('stderr: ', data.stack)
       throw data
     })
 
