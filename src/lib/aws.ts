@@ -28,8 +28,6 @@ export async function downloadS3Folder(prefix: string) {
         Prefix: prefix,
       })
       .promise();
-    
-    console.log(result)
 
     if (!result.Contents || result.Contents.length === 0) {
       console.log('No files found in the specified prefix.');
