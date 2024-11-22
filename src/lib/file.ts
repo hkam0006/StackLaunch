@@ -32,10 +32,10 @@ export async function downloadAndExtractRepoToS3(repoUrl: string, domainName: st
     if (entry.type === 'File') {
       // Read file content as a buffer and upload it to S3
       const fileContent = await entry.buffer();
-      const s3Key = `output/${domainName}/${fileName}`; // S3 path for the file
+      const s3Key: string = `output/${domainName}/${fileName.split("/").slice(1).join("/")}`; // S3 path for the file
 
       try {
-        await uploadToS3(s3Key.split("/").slice(1).join("/"), fileContent, s3);
+        await uploadToS3(s3Key, fileContent, s3);
         console.log(`Uploaded ${fileName} to S3 at ${s3Key}`);
       } catch (error) {
         console.error(`Failed to upload ${fileName} to S3:`, error);
